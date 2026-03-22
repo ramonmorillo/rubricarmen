@@ -1,6 +1,6 @@
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import { formatDate, formatScore } from './formatters';
+import { formatDate } from './formatters';
 
 export function generateEvaluationPdf(evaluation) {
   const doc = new jsPDF({ unit: 'pt', format: 'a4' });
@@ -9,17 +9,13 @@ export function generateEvaluationPdf(evaluation) {
 
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(18);
-  doc.text('Informe de evaluación asistida · Luis Cernuda', marginX, cursorY);
+  doc.text('Informe individualizado · Luis Cernuda · 2º Bachillerato', marginX, cursorY);
 
   cursorY += 20;
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(10);
   doc.setTextColor(71, 85, 105);
-  doc.text(
-    'La calificación propuesta debe contrastarse con el juicio profesional de la docente.',
-    marginX,
-    cursorY,
-  );
+  doc.text('Informe cualitativo orientativo para revisión docente.', marginX, cursorY);
 
   cursorY += 24;
   doc.setTextColor(15, 23, 42);
@@ -27,71 +23,63 @@ export function generateEvaluationPdf(evaluation) {
   const metadataLines = [
     `Alumno/a: ${evaluation.student.name}`,
     `Grupo/curso: ${evaluation.student.group}`,
-    `Título del trabajo: ${evaluation.student.assignmentTitle}`,
-    `Fecha de evaluación: ${formatDate(evaluation.generatedAt)}`,
+    `Poema: ${evaluation.student.poemTitle || 'No indicado'}`,
+    `Fecha: ${formatDate(evaluation.generatedAt)}`,
+    `Estado del documento: ${evaluation.extraction.documentStatus}`,
+    `Modo de extracción: ${evaluation.extraction.usedOcr ? 'OCR' : 'Texto digital'}`,
   ];
 
   metadataLines.forEach((line) => {
     doc.text(line, marginX, cursorY);
-    cursorY += 16;
+    cursorY += 15;
   });
 
-  cursorY += 8;
+  if (evaluation.extraction.warnings.length) {
+    cursorY += 4;
+    doc.setTextColor(180, 83, 9);
+    doc.text(`Avisos: ${evaluation.extraction.warnings.join(' | ')}`, marginX, cursorY, { maxWidth: 510 });
+    cursorY += 20;
+    doc.setTextColor(15, 23, 42);
+  }
 
   autoTable(doc, {
     startY: cursorY,
     margin: { left: marginX, right: marginX },
-    head: [['Criterio', 'Nivel', 'Puntuación', 'Justificación breve']],
+    head: [['Criterio', 'Nivel detectado', 'Justificación breve', 'Evidencia textual']],
     body: evaluation.criteria.map((criterion) => [
-      criterion.name,
-      `${criterion.level}/4`,
-      formatScore(criterion.score),
+      criterion.criterion,
+      criterion.detectedLevel,
       criterion.justification,
+      criterion.textualEvidence.join(' · '),
     ]),
     styles: {
-      fontSize: 9,
-      cellPadding: 6,
+      fontSize: 8.5,
+      cellPadding: 5,
       valign: 'top',
+      overflow: 'linebreak',
     },
     headStyles: {
       fillColor: [30, 64, 175],
     },
   });
 
-  cursorY = doc.lastAutoTable.finalY + 22;
+  cursorY = doc.lastAutoTable.finalY + 20;
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(12);
-  doc.text('Fortalezas detectadas', marginX, cursorY);
-
-  cursorY += 14;
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(10);
-  const strengthsText = doc.splitTextToSize(`• ${evaluation.summary.strengths.join('\n• ')}`, 510);
-  doc.text(strengthsText, marginX, cursorY);
-
-  cursorY += strengthsText.length * 12 + 12;
-  doc.setFont('helvetica', 'bold');
-  doc.text('Aspectos de mejora y recomendaciones', marginX, cursorY);
-
-  cursorY += 14;
-  doc.setFont('helvetica', 'normal');
-  const improvements = [
-    ...evaluation.summary.weaknesses.map((item) => `Debilidad: ${item}`),
-    ...evaluation.summary.recommendations.map((item) => `Sugerencia: ${item}`),
-  ];
-  const improvementsText = doc.splitTextToSize(`• ${improvements.join('\n• ')}`, 510);
-  doc.text(improvementsText, marginX, cursorY);
-
-  cursorY += improvementsText.length * 12 + 18;
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(16);
-  doc.text(`Nota global propuesta: ${formatScore(evaluation.finalScore)} / 10`, marginX, cursorY);
+  doc.text('Bloque de originalidad y dependencia de fuentes', marginX, cursorY);
 
   cursorY += 16;
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(10);
-  const finalComments = doc.splitTextToSize(evaluation.summary.finalObservation, 510);
-  doc.text(finalComments, marginX, cursorY);
+  const originalityText = doc.splitTextToSize(
+    `Categoría: ${evaluation.originality.category}. ${evaluation.originality.rationale}`,
+    510,
+  );
+  doc.text(originalityText, marginX, cursorY);
+
+  cursorY += originalityText.length * 12 + 10;
+  const noteText = doc.splitTextToSize('Observación final: Informe orientativo para revisión docente.', 510);
+  doc.text(noteText, marginX, cursorY);
 
   doc.setFontSize(9);
   doc.setTextColor(100, 116, 139);

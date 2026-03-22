@@ -5,22 +5,17 @@ import { AppShell } from './components/AppShell';
 import { EvaluationForm } from './components/EvaluationForm';
 import { ResultsPanel } from './components/ResultsPanel';
 import { messages } from './lib/i18n';
-import { evaluateEssay } from './lib/api';
+import { evaluateEssay, fileToBase64 } from './lib/api';
 import { generateEvaluationPdf } from './lib/pdf';
 
 const initialFormData = {
   studentName: '',
   studentGroup: '',
-  assignmentTitle: '',
+  poemTitle: '',
   rubricId: rubric.id,
-  essayText: '',
+  pdfFile: null,
+  pdfFileName: '',
 };
-
-const sampleEssay = `Luis Cernuda pertenece a la Generación del 27, aunque su trayectoria poética tiene una voz muy personal. En su obra aparece una tensión constante entre deseo y realidad, que da título al conjunto de su poesía. La experiencia del exilio también marca sus poemas, porque transforma la nostalgia en una forma de conocimiento doloroso.
-
-En poemas como "Donde habite el olvido" se percibe un tono íntimo, sobrio y reflexivo. No busca una ornamentación excesiva, sino una expresión depurada que comunica frustración, deseo y soledad. Además, la naturaleza y la memoria funcionan como símbolos que permiten comprender el conflicto interior del poeta.
-
-A mi juicio, Cernuda no solo escribe desde la biografía, sino desde una reflexión más amplia sobre la libertad individual. Por eso su poesía sigue resultando actual: convierte una experiencia personal en una meditación universal sobre el amor, la identidad y la imposibilidad de reconciliarse con el mundo.`;
 
 export default function App() {
   const [formData, setFormData] = useState(initialFormData);
@@ -35,25 +30,37 @@ export default function App() {
     setFormData((current) => ({ ...current, [name]: value }));
   }
 
+  function handleFileChange(event) {
+    const file = event.target.files?.[0] || null;
+    setFormData((current) => ({
+      ...current,
+      pdfFile: file,
+      pdfFileName: file?.name || '',
+    }));
+  }
+
   async function handleSubmit(event) {
     event.preventDefault();
     setError('');
 
-    if (formData.essayText.trim().length < 220) {
-      setError('El texto es demasiado breve para una evaluación razonada. Añade más contenido antes de analizarlo.');
+    if (!formData.pdfFile) {
+      setError('Debes seleccionar un PDF antes de iniciar el análisis.');
       return;
     }
 
     try {
       setLoading(true);
+      const pdfBase64 = await fileToBase64(formData.pdfFile);
       const result = await evaluateEssay({
         student: {
           name: formData.studentName.trim(),
           group: formData.studentGroup.trim(),
-          assignmentTitle: formData.assignmentTitle.trim(),
+          poemTitle: formData.poemTitle.trim(),
+          assignmentTitle: formData.pdfFileName || 'Trabajo del alumno',
         },
         rubricId: formData.rubricId,
-        essayText: formData.essayText.trim(),
+        pdfBase64,
+        pdfFileName: formData.pdfFileName,
       });
       setEvaluation(result);
     } catch (submitError) {
@@ -78,9 +85,10 @@ export default function App() {
     setFormData({
       studentName: 'Lucía Hernández Vega',
       studentGroup: '2º Bach A',
-      assignmentTitle: 'Realidad, deseo y exilio en Luis Cernuda',
+      poemTitle: 'Donde habite el olvido',
       rubricId: rubric.id,
-      essayText: sampleEssay,
+      pdfFile: null,
+      pdfFileName: 'lucia-hernandez-cernuda.pdf',
     });
     setEvaluation(sampleOutput);
     setError('');
@@ -99,18 +107,14 @@ export default function App() {
           rubric={rubric}
           formData={formData}
           onChange={handleChange}
+          onFileChange={handleFileChange}
           onSubmit={handleSubmit}
           loading={loading}
           error={error}
           onLoadExample={handleLoadExample}
         />
         {evaluation ? (
-          <ResultsPanel
-            evaluation={evaluation}
-            onExportPdf={() => generateEvaluationPdf(evaluation)}
-            onExportJson={handleExportJson}
-            onReset={handleReset}
-          />
+          <ResultsPanel evaluation={evaluation} onExportPdf={() => generateEvaluationPdf(evaluation)} onExportJson={handleExportJson} onReset={handleReset} />
         ) : (
           <EmptyState />
         )}
@@ -125,7 +129,7 @@ function EmptyState() {
       <div className="max-w-md">
         <h2 className="text-xl font-semibold text-slate-900">Sin evaluación todavía</h2>
         <p className="mt-3 text-sm leading-7 text-slate-500">
-          Cuando analices un trabajo aparecerán aquí los criterios evaluados, la propuesta de nota global, las fortalezas, los aspectos de mejora y los botones para exportar el informe en PDF o JSON.
+          Cuando analices un PDF aparecerán aquí el estado de extracción, los criterios cualitativos, la señalización prudente de originalidad y los botones para exportar el informe en PDF o JSON.
         </p>
       </div>
     </section>

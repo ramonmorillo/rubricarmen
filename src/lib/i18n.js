@@ -1,8 +1,9 @@
 export const messages = {
   es: {
-    appTitle: 'RubriCarmen',
-    appSubtitle: 'Evaluación asistida de trabajos sobre Luis Cernuda',
+    appTitle: 'RubriCarmen · Evaluación docente de trabajos sobre Luis Cernuda',
+    appSubtitle:
+      'Sube el PDF del alumno, extrae el texto con OCR si hace falta y obtén un informe cualitativo alineado con la rúbrica del profesorado.',
     disclaimer:
-      'La valoración es una ayuda docente basada en rúbrica y evidencias detectadas en el texto. Debe revisarse críticamente antes de comunicar una calificación definitiva.',
+      'La aplicación no calcula la nota final. Su función es ofrecer una valoración orientativa, prudente y trazable por criterios, incluida una revisión de originalidad y posible dependencia excesiva de fuentes.',
   },
 };

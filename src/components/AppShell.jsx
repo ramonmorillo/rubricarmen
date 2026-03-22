@@ -1,4 +1,4 @@
-import { FileCheck2, ShieldCheck, Sparkles } from 'lucide-react';
+import { FileCheck2, ScanSearch, ShieldCheck, Sparkles } from 'lucide-react';
 
 export function AppShell({ title, subtitle, disclaimer, children }) {
   return (
@@ -9,7 +9,7 @@ export function AppShell({ title, subtitle, disclaimer, children }) {
             <div className="max-w-3xl space-y-4">
               <span className="inline-flex items-center gap-2 rounded-full bg-brand-50 px-3 py-1 text-sm font-medium text-brand-700">
                 <Sparkles className="h-4 w-4" />
-                Asistencia docente basada en rúbrica
+                Flujo real de evaluación docente
               </span>
               <div>
                 <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">{title}</h1>
@@ -18,16 +18,9 @@ export function AppShell({ title, subtitle, disclaimer, children }) {
               <p className="max-w-3xl text-sm leading-6 text-slate-500">{disclaimer}</p>
             </div>
             <div className="grid gap-3 sm:grid-cols-3 lg:w-[24rem] lg:grid-cols-1">
-              <FeatureCard
-                icon={<FileCheck2 className="h-5 w-5 text-brand-600" />}
-                title="Rúbrica transparente"
-                description="Cada criterio muestra nivel, peso, justificación y evidencia insuficiente cuando corresponda."
-              />
-              <FeatureCard
-                icon={<ShieldCheck className="h-5 w-5 text-brand-600" />}
-                title="Frontend sin claves"
-                description="La evaluación se delega a un Worker independiente para mantener la configuración sensible fuera del cliente."
-              />
+              <FeatureCard icon={<FileCheck2 className="h-5 w-5 text-brand-600" />} title="PDF + OCR" description="Detecta si el PDF tiene texto digital y activa OCR de respaldo cuando el backend lo permite." />
+              <FeatureCard icon={<ScanSearch className="h-5 w-5 text-brand-600" />} title="Originalidad prudente" description="No confirma plagio: solo clasifica indicios y los justifica con coincidencias trazables." />
+              <FeatureCard icon={<ShieldCheck className="h-5 w-5 text-brand-600" />} title="Backend seguro" description="La extracción, el análisis y la comparación con la base de conocimiento se realizan fuera del cliente." />
             </div>
           </div>
         </header>
