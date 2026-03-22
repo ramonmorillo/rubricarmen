@@ -10,10 +10,23 @@ export async function evaluateEssay(payload) {
     body: JSON.stringify(payload),
   });
 
+  const data = await response.json().catch(() => ({}));
   if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(errorText || 'No se ha podido completar el análisis.');
+    throw new Error(data.error || 'No se ha podido completar el análisis.');
   }
 
-  return response.json();
+  return data;
+}
+
+export async function fileToBase64(file) {
+  const arrayBuffer = await file.arrayBuffer();
+  let binary = '';
+  const bytes = new Uint8Array(arrayBuffer);
+  const chunkSize = 0x8000;
+
+  for (let index = 0; index < bytes.length; index += chunkSize) {
+    binary += String.fromCharCode(...bytes.subarray(index, index + chunkSize));
+  }
+
+  return btoa(binary);
 }

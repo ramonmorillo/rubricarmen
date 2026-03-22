@@ -1,7 +1,3 @@
-export function formatScore(score) {
-  return Number(score).toFixed(2);
-}
-
 export function formatDate(dateString) {
   try {
     return new Intl.DateTimeFormat('es-ES', {
@@ -13,6 +9,18 @@ export function formatDate(dateString) {
   }
 }
 
-export function criterionWeightLabel(weight) {
-  return `${Math.round(weight * 100)}%`;
+export function extractionStatusLabel(extraction) {
+  if (!extraction) return 'Sin analizar';
+  return extraction.documentStatus;
+}
+
+export function ocrQualityLabel(quality) {
+  const labels = {
+    high: 'OCR alto',
+    medium: 'OCR medio',
+    low: 'OCR bajo',
+    'not-needed': 'No necesario',
+    unavailable: 'No disponible',
+  };
+  return labels[quality] || quality || 'Sin dato';
 }

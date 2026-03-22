@@ -1,54 +1,80 @@
 # RubriCarmen
 
-Aplicación web profesional para que profesorado de **2º de Bachillerato** evalúe trabajos escritos sobre **Luis Cernuda** mediante una **rúbrica docente editable**, reciba una **valoración asistida por IA** y genere un **PDF individualizado** por alumno.
+Aplicación para profesorado de **2º de Bachillerato** que analiza trabajos sobre **Luis Cernuda** a partir del **PDF del alumno**, extrae el texto, aplica **OCR** cuando es necesario, evalúa según una **rúbrica cualitativa editable en JSON** y genera un **informe PDF individualizado**.
 
-> **Importante:** la herramienta está diseñada como apoyo a la evaluación, no como sustituto del juicio docente. Siempre muestra una advertencia de uso y procura justificar cada criterio con evidencia textual o indicar cuando esa evidencia es insuficiente.
+> **Importante:** la herramienta **no calcula la nota final**. La nota se sigue gestionando en iDoceo o en el sistema docente habitual. RubriCarmen solo proporciona una valoración orientativa, prudente y trazable para apoyar la revisión profesional.
 
 ---
 
-## 1. Qué incluye esta primera versión funcional
+## 1. Flujo funcional implementado
+
+La aplicación ahora trabaja con este circuito:
+
+1. El profesorado sube un **PDF** del trabajo del alumno.
+2. El backend intenta extraer **texto digital embebido**.
+3. Si no encuentra texto suficiente, intenta aplicar **OCR**.
+4. La app indica claramente si el documento se ha leído como:
+   - **Texto digital embebido**
+   - **PDF escaneado con OCR**
+5. Si el OCR es de calidad baja, la interfaz muestra un **aviso explícito de revisión manual recomendada**.
+6. El backend analiza el trabajo con una **rúbrica JSON editable**.
+7. Para cada criterio devuelve:
+   - criterio,
+   - nivel detectado,
+   - justificación breve,
+   - evidencia textual,
+   - recomendación de mejora.
+8. Además, compara el trabajo con una **base de conocimiento interna** para:
+   - comprobar apoyo factual,
+   - detectar dependencia textual o estructural excesiva.
+9. Finalmente, el frontend genera un **PDF individualizado** con la valoración cualitativa.
+
+---
+
+## 2. Arquitectura actual
 
 ### Frontend
 - **React + Vite**.
-- **Tailwind CSS** para una interfaz limpia y moderna.
-- Formulario para introducir datos del alumno y pegar el texto del trabajo.
-- Pantalla de resultados con:
-  - criterios evaluados,
-  - nivel aplicado,
-  - puntuación por criterio,
-  - descriptor,
-  - justificación breve,
-  - evidencia textual o aviso de evidencia insuficiente.
-- Botones para:
-  - **Analizar trabajo**,
-  - **Generar PDF**,
-  - **Exportar JSON**,
-  - **Reiniciar evaluación**.
-- Preparado para **GitHub Pages** mediante la propiedad `base` de Vite controlada por variable de entorno.
+- Interfaz orientada a profesorado.
+- Subida de PDF.
+- Visualización del estado de extracción, OCR, criterios, originalidad y recomendaciones.
+- Exportación a **JSON** y a **PDF**.
 
 ### Backend
-- **Cloudflare Worker** separado del frontend.
-- Sin claves en cliente.
-- Dos modos de funcionamiento:
-  1. **Con IA real**: si configuras `OPENAI_API_KEY`, el Worker solicita una valoración estructurada al modelo.
-  2. **Modo funcional sin clave**: si no configuras clave, el Worker genera una evaluación heurística basada en la rúbrica y en evidencias detectadas en el texto. Esto permite disponer de una versión operativa desde el primer momento.
-
-### Datos y ejemplos
-- Rúbrica editable en `rubric/cernuda-2bach.json`.
-- Ejemplo de trabajo del alumno en `examples/sample-work.txt`.
-- Ejemplo de salida estructurada en `examples/sample-output.json`.
+- Backend seguro en `server/` con **Node.js** y módulos nativos.
+- Endpoints:
+  - `GET /api/health`
+  - `POST /api/evaluate`
+- El cliente envía el PDF como **base64** por JSON al backend.
+- El backend organiza el flujo en módulos:
+  - `pdfExtractor`
+  - `ocrFallback`
+  - `rubricMatcher`
+  - `knowledgeComparator`
+  - `originalityChecker`
+  - `reportGenerator`
 
 ---
 
-## 2. Estructura del proyecto
+## 3. Estructura del proyecto
 
 ```text
 rubricarmen/
 ├─ examples/
-│  ├─ sample-output.json
-│  └─ sample-work.txt
+│  └─ sample-output.json
+├─ knowledge-base/
+│  └─ cernuda-knowledge.json
 ├─ rubric/
 │  └─ cernuda-2bach.json
+├─ server/
+│  ├─ index.js
+│  ├─ knowledgeComparator.js
+│  ├─ ocrFallback.js
+│  ├─ originalityChecker.js
+│  ├─ pdfExtractor.js
+│  ├─ reportGenerator.js
+│  ├─ rubricMatcher.js
+│  └─ utils.js
 ├─ src/
 │  ├─ components/
 │  │  ├─ AppShell.jsx
@@ -59,46 +85,123 @@ rubricarmen/
 │  │  ├─ formatters.js
 │  │  ├─ i18n.js
 │  │  └─ pdf.js
-│  ├─ App.jsx
-│  ├─ index.css
-│  └─ main.jsx
-├─ worker/
-│  ├─ index.js
-│  └─ wrangler.toml
-├─ index.html
-├─ package.json
-├─ postcss.config.js
-├─ tailwind.config.js
-├─ vite.config.js
+│  └─ App.jsx
 └─ README.md
 ```
 
 ---
 
-## 3. Requisitos previos
+## 4. Rúbrica cualitativa editable
 
-- **Node.js 20+** recomendado.
-- **npm 10+** recomendado.
-- Cuenta de **Cloudflare** para desplegar el Worker.
-- Opcional: una clave `OPENAI_API_KEY` para usar evaluación con IA en lugar del modo heurístico local del Worker.
+La rúbrica está en:
+
+- `rubric/cernuda-2bach.json`
+
+Incluye estos criterios:
+
+- Portada
+- Índice
+- Introducción
+- Biografía del autor
+- Localización del poema
+- Tema
+- Estructura
+- Análisis métrico
+- Análisis del estilo
+- Comentario crítico
+- Conclusión
+- Bibliografía
+- Originalidad
+- Ortografía y redacción
+
+Niveles usados:
+
+- Excelente
+- Notable
+- Adecuado
+- Insuficiente
+- Muy deficiente
 
 ---
 
-## 4. Instalación local
+## 5. Lógica de originalidad y dependencia de fuentes
+
+La app **no afirma “plagio confirmado”**.
+
+Solo utiliza estas categorías:
+
+- **Sin indicios relevantes**
+- **Sospecha moderada de dependencia de fuentes**
+- **Sospecha alta de copia o reproducción**
+
+La señalización se apoya en indicios como:
+
+- similitud con materiales de apoyo de la base de conocimiento,
+- reformulación insuficiente,
+- bloques demasiado genéricos o impropios del nivel,
+- ausencia de interpretación personal,
+- saltos de estilo,
+- coincidencias textuales extensas.
+
+La coincidencia conceptual esperable en un trabajo sobre Cernuda **no debe interpretarse como copia**.
+
+---
+
+## 6. Base de conocimiento interna
+
+La base de conocimiento está en:
+
+- `knowledge-base/cernuda-knowledge.json`
+
+Se usa para dos funciones:
+
+1. **Comprobación de apoyo factual** sobre Luis Cernuda.
+2. **Detección de dependencia excesiva** de materiales de apoyo.
+
+Puedes ampliarla con:
+
+- fichas docentes,
+- comentarios modelo,
+- materiales sobre poemas concretos,
+- resúmenes curriculares del departamento.
+
+Recomendación importante: incluir materiales reales del centro para que la detección de dependencia sea más útil y ajustada a vuestro contexto.
+
+---
+
+## 7. Requisitos del sistema
+
+### Necesarios
+- **Node.js 20+**.
+- **npm** para el frontend.
+
+### Recomendados para OCR real sobre PDFs escaneados
+Instalar en el servidor o máquina de despliegue:
+
+- `pdftotext`
+- `pdftoppm`
+- `tesseract`
+- paquete de idioma español de Tesseract (`spa`)
+
+En Debian/Ubuntu, por ejemplo:
 
 ```bash
-npm install
+sudo apt install poppler-utils tesseract-ocr tesseract-ocr-spa
 ```
 
-### Lanzar frontend en desarrollo
+---
+
+## 8. Desarrollo local
+
+### Frontend
 ```bash
+npm install
 npm run dev
 ```
 
-### Lanzar Worker en desarrollo
-En otra terminal:
+### Backend
 ```bash
-npm run worker:dev
+npm run server:dev
 ```
 
 Por defecto, el frontend apunta a:
@@ -107,294 +210,61 @@ Por defecto, el frontend apunta a:
 http://127.0.0.1:8787/api/evaluate
 ```
 
-Si quieres usar otro endpoint, crea un archivo `.env` en la raíz con:
+Si necesitas cambiar la URL del backend, crea un archivo `.env` en la raíz con:
 
 ```bash
-VITE_EVALUATION_API_URL=https://tu-worker.tu-subdominio.workers.dev/api/evaluate
+VITE_EVALUATION_API_URL=http://127.0.0.1:8787/api/evaluate
 ```
 
 ---
 
-## 5. Configuración del Worker
+## 9. Respuesta del backend
 
-El Worker está en `worker/index.js` y expone:
+La respuesta principal incluye:
 
-- `POST /api/evaluate`
-- `GET /api/health`
-- `OPTIONS /api/evaluate`
-
-### Variables del Worker
-Puedes configurar estas variables/secretos:
-
-#### Obligatoria solo si quieres IA real
-```bash
-OPENAI_API_KEY
-```
-
-#### Opcional
-```bash
-OPENAI_MODEL=gpt-4o-mini
-```
-
-### Desarrollo local con clave
-```bash
-npx wrangler secret put OPENAI_API_KEY
-```
-
-Luego:
-```bash
-npm run worker:dev
-```
-
-### Cómo funciona la evaluación
-
-#### Si existe `OPENAI_API_KEY`
-El Worker:
-1. valida la entrada,
-2. envía la rúbrica + trabajo al modelo,
-3. exige salida JSON,
-4. normaliza la respuesta,
-5. devuelve el informe al frontend.
-
-#### Si no existe `OPENAI_API_KEY`
-El Worker:
-1. analiza el texto con reglas heurísticas,
-2. busca indicadores de contexto, temas, estilo, conectores y formulaciones interpretativas,
-3. asigna un nivel por criterio,
-4. genera justificaciones prudentes,
-5. señala cuando **no hay evidencia textual suficiente**.
-
-Este modo no sustituye la IA real, pero permite una **versión funcional y utilizable** sin bloquear la puesta en marcha del proyecto.
-
----
-
-## 6. Despliegue del frontend en GitHub Pages
-
-### Opción recomendada: despliegue con GitHub Actions
-
-1. Sube el proyecto a GitHub.
-2. Activa GitHub Pages en el repositorio.
-3. Añade en el flujo de build la variable:
-
-```bash
-GITHUB_PAGES=true
-```
-
-Esto hace que Vite use:
-
-```text
-/rubricarmen/
-```
-
-como `base` en producción.
-
-### Build manual
-```bash
-GITHUB_PAGES=true npm run build
-```
-
-El contenido generado en `dist/` puede publicarse en GitHub Pages.
-
-### Variable de entorno del frontend
-Antes del build, configura el endpoint del Worker:
-
-```bash
-VITE_EVALUATION_API_URL=https://tu-worker.tu-subdominio.workers.dev/api/evaluate
-```
-
-### Ejemplo de flujo básico de GitHub Actions
-
-```yaml
-name: Deploy frontend to GitHub Pages
-
-on:
-  push:
-    branches: [main]
-
-permissions:
-  contents: read
-  pages: write
-  id-token: write
-
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: npm
-      - run: npm ci
-      - run: GITHUB_PAGES=true npm run build
-        env:
-          VITE_EVALUATION_API_URL: ${{ secrets.VITE_EVALUATION_API_URL }}
-      - uses: actions/upload-pages-artifact@v3
-        with:
-          path: dist
-
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - id: deployment
-        uses: actions/deploy-pages@v4
-```
-
----
-
-## 7. Despliegue del backend en Cloudflare Worker
-
-### Autenticación con Cloudflare
-```bash
-npx wrangler login
-```
-
-### Despliegue
-```bash
-npm run worker:deploy
-```
-
-### Configurar el secreto de IA
-```bash
-npx wrangler secret put OPENAI_API_KEY
-```
-
-### Verificación rápida
-```bash
-curl https://tu-worker.tu-subdominio.workers.dev/api/health
-```
-
----
-
-## 8. Uso de la aplicación
-
-1. Introduce el nombre del alumno.
-2. Introduce grupo/curso.
-3. Introduce el título del trabajo.
-4. Pega el texto completo.
-5. Pulsa **Analizar trabajo**.
-6. Revisa la propuesta de evaluación.
-7. Exporta el resultado en **PDF** o **JSON**.
-8. Si deseas empezar de nuevo, usa **Reiniciar evaluación**.
-
-También puedes usar **Cargar ejemplo** para rellenar el formulario y visualizar una salida ya preparada.
-
----
-
-## 9. Archivo de rúbrica editable
-
-La rúbrica está en:
-
-```text
-rubric/cernuda-2bach.json
-```
-
-Cada criterio incluye:
-- `id`
-- `name`
-- `weight`
-- `levels`
-
-Los niveles van del **1 al 4** y contienen un descriptor completo por nivel.
-
-Si más adelante quieres añadir nuevas rúbricas, la arquitectura actual ya permite extender el selector del frontend y la lógica del Worker.
-
----
-
-## 10. PDF generado
-
-El botón **Generar PDF** crea un informe con:
-- cabecera profesional,
 - datos del alumno,
-- fecha de evaluación,
-- tabla de criterios,
-- puntuaciones,
-- comentarios individualizados,
-- fortalezas,
-- aspectos de mejora,
-- recomendaciones,
-- nota final destacada,
-- pie con fecha de generación.
-
-La generación se realiza en el frontend con `jsPDF`, de modo que la profesora puede descargar el informe al instante.
+- estado del documento,
+- uso o no de OCR,
+- calidad estimada del OCR,
+- avisos de extracción,
+- criterios evaluados,
+- bloque de originalidad,
+- comprobaciones contra base de conocimiento,
+- estructura preparada para el informe final.
 
 ---
 
-## 11. Consideraciones pedagógicas incorporadas
+## 10. Informe PDF final
 
-- La evaluación se presenta como **asistida por IA**, no como automática e infalible.
-- El lenguaje es **académico, claro y respetuoso**.
-- Cuando no se detecta base suficiente para una valoración fuerte, el informe lo dice de forma explícita.
-- Se intenta justificar cada criterio con evidencia del texto o con una advertencia prudente sobre la insuficiencia de evidencia.
-- Las observaciones finales están redactadas para ser útiles tanto a la profesora como al alumnado.
+El PDF generado por el frontend incluye:
 
----
-
-## 12. Validaciones incluidas
-
-### En el frontend
-- campos obligatorios,
-- longitud mínima del texto antes de analizar,
-- control visual de errores.
-
-### En el Worker
-- validación del identificador de rúbrica,
-- validación de datos del alumno,
-- validación de longitud mínima del trabajo,
-- manejo elegante de errores con respuesta JSON.
+- nombre del alumno,
+- fecha,
+- estado del documento,
+- modo de extracción,
+- tabla por criterios con nivel alcanzado,
+- comentario breve por criterio,
+- evidencia textual,
+- bloque final de originalidad,
+- bloque final de sospecha de copia/dependencia de fuentes,
+- observación final:
+  - **“Informe orientativo para revisión docente”**
 
 ---
 
-## 13. Preparación para futura internacionalización
+## 11. Limitaciones actuales
 
-Se ha dejado una base simple en `src/lib/i18n.js` para separar textos de interfaz. La primera versión está en español, pero la estructura permite evolucionar a un sistema de etiquetas por idioma más amplio.
-
----
-
-## 14. Archivos de ejemplo
-
-### Trabajo de ejemplo
-```text
-examples/sample-work.txt
-```
-
-### Salida JSON de ejemplo
-```text
-examples/sample-output.json
-```
+1. El OCR depende de utilidades del sistema (`pdftoppm` y `tesseract`). Si no están instaladas, el backend informa con claridad de que el OCR no está disponible.
+2. La extracción de texto embebido mejora mucho si `pdftotext` está instalado. Sin esa utilidad, el backend aplica un intento de lectura más simple y menos fiable.
+3. La detección de originalidad es **prudente y orientativa**, no forense.
+4. El valor de la herramienta aumenta si se enriquece la base de conocimiento con materiales reales del departamento.
+5. El entorno actual de esta tarea puede impedir instalar dependencias npm o del sistema; por eso el backend se ha implementado con módulos nativos de Node y apoyos opcionales del sistema operativo.
 
 ---
 
-## 15. Mejoras futuras recomendadas
+## 12. Despliegue recomendado
 
-- Soporte multi-rúbrica.
-- Historial de evaluaciones.
-- Carga de documentos `.docx` o `.pdf`.
-- Panel de administración de rúbricas.
-- Ajustes de idioma español/inglés.
-- Autenticación docente.
-- Almacenamiento seguro de informes.
-- Citas textuales automáticas con fragmentos destacados del trabajo.
-
----
-
-## 16. Scripts disponibles
-
-```bash
-npm run dev
-npm run build
-npm run preview
-npm run lint
-npm run worker:dev
-npm run worker:deploy
-```
-
----
-
-## 17. Nota final de diseño
-
-Esta primera versión prioriza **simplicidad**, **robustez**, **separación frontend/backend** y **utilidad real para profesorado**. No es un prototipo vacío: el sistema puede funcionar ya con un Worker heurístico y queda preparado para integrar un proveedor de IA real mediante secretos del backend.
+- Frontend estático con Vite.
+- Backend Node.js desplegado en un entorno interno del centro, servidor propio o VPS.
+- OCR habilitado solo en el backend, nunca en el cliente.
+- Si el centro lo desea, puede mantenerse el antiguo Worker como pieza separada, pero el flujo principal de esta versión queda orientado al backend de `server/`.

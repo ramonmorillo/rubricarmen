@@ -1,0 +1,51 @@
+{
+  "supportMaterials": [
+    {
+      "title": "Ficha docente interna · Luis Cernuda",
+      "passages": [
+        {
+          "section": "Biografía y trayectoria",
+          "text": "Luis Cernuda Bidón nació en Sevilla en 1902. Integrado en la Generación del 27, su poesía quedó reunida bajo el título La realidad y el deseo. El exilio posterior a la Guerra Civil marcó decisivamente su escritura y su visión del deseo, la pérdida y la libertad."
+        },
+        {
+          "section": "Rasgos temáticos",
+          "text": "En la poesía de Cernuda se repiten la tensión entre realidad y deseo, la soledad, el amor insatisfecho, la memoria, la nostalgia y la aspiración a una libertad individual difícil de sostener frente al mundo."
+        },
+        {
+          "section": "Comentario de estilo",
+          "text": "Su estilo tiende a una expresión sobria, de gran limpieza verbal, en la que símbolos, imágenes de la naturaleza y modulaciones meditativas construyen una voz poética reconocible."
+        }
+      ]
+    },
+    {
+      "title": "Guía de apoyo sobre el poema",
+      "passages": [
+        {
+          "section": "Localización del poema",
+          "text": "Donde habite el olvido pertenece al libro del mismo título y suele leerse como una depuración extrema del conflicto amoroso, donde el yo poético desea borrarse para escapar del dolor."
+        },
+        {
+          "section": "Métrica y estructura",
+          "text": "La organización del poema y el ritmo libre o semilibre deben comentarse con prudencia: interesa explicar cómo la forma acompaña al tono elegíaco y a la intensidad emocional, más que enumerar rasgos métricos sin función interpretativa."
+        }
+      ]
+    }
+  ],
+  "factualCheckpoints": [
+    {
+      "id": "gen27",
+      "label": "Referencia a la Generación del 27",
+      "expectedTerms": ["generación", "27"]
+    },
+    {
+      "id": "exilio",
+      "label": "Referencia al exilio",
+      "expectedTerms": ["exilio"]
+    },
+    {
+      "id": "realidad-deseo",
+      "label": "Referencia al eje realidad/deseo",
+      "expectedTerms": ["realidad", "deseo"]
+    }
+  ]
+}

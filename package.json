@@ -1,13 +1,14 @@
 {
   "name": "rubricarmen",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.2.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
     "lint": "eslint .",
+    "server:dev": "node server/index.js",
     "worker:dev": "wrangler dev worker/index.js",
     "worker:deploy": "wrangler deploy worker/index.js"
   },
