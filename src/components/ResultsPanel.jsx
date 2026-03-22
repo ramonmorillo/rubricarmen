@@ -1,5 +1,7 @@
 import { Download, RefreshCcw, Save } from 'lucide-react';
+import rubric from '../../rubric/cernuda-2bach.json';
 import { extractionStatusLabel, formatDate, ocrQualityLabel } from '../lib/formatters';
+import { buildObservations, getMarkedRubricRows } from '../lib/rubricOutput';
 
 export function ResultsPanel({ evaluation, onExportPdf, onExportJson, onReset }) {
   const safeEvaluation = {
@@ -16,18 +18,21 @@ export function ResultsPanel({ evaluation, onExportPdf, onExportJson, onReset })
     },
   };
 
+  const rubricRows = getMarkedRubricRows(safeEvaluation.criteria);
+  const observations = buildObservations(safeEvaluation);
+
   return (
     <section className="rounded-3xl border border-white/70 bg-white/90 p-6 shadow-panel backdrop-blur">
       <div className="flex flex-col gap-5 border-b border-slate-200 pb-5 lg:flex-row lg:items-end lg:justify-between">
         <div>
-          <h2 className="text-xl font-semibold text-slate-900">Resultado de la evaluación</h2>
+          <h2 className="text-xl font-semibold text-slate-900">Rúbrica marcada generada</h2>
           <p className="mt-1 text-sm text-slate-500">
-            Informe orientativo generado el {formatDate(safeEvaluation.generatedAt)}. No calcula la nota final; deja esa decisión para iDoceo y la revisión docente.
+            Salida principal en formato de rúbrica imprimible generada el {formatDate(safeEvaluation.generatedAt)}. No calcula la nota final.
           </p>
         </div>
         <div className="flex flex-col gap-3 sm:flex-row">
           <ActionButton onClick={onExportPdf} icon={<Download className="h-4 w-4" />}>
-            Generar PDF
+            Descargar rúbrica PDF
           </ActionButton>
           <ActionButton onClick={onExportJson} icon={<Save className="h-4 w-4" />} variant="secondary">
             Exportar JSON
@@ -62,56 +67,55 @@ export function ResultsPanel({ evaluation, onExportPdf, onExportJson, onReset })
         </div>
       ) : null}
 
-      <div className="mt-8 space-y-4">
-        {safeEvaluation.criteria.map((criterion) => (
-          <article key={criterion.criterionId} className="rounded-3xl border border-slate-200 bg-slate-50 p-5">
-            <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-              <div>
-                <h3 className="text-lg font-semibold text-slate-900">{criterion.criterion}</h3>
-                <p className="mt-1 text-sm font-medium text-brand-700">Nivel detectado: {criterion.detectedLevel}</p>
-              </div>
-              <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold uppercase tracking-wide text-slate-500">
-                Evidencia trazable
-              </span>
-            </div>
-            <p className="mt-4 text-sm leading-7 text-slate-700">{criterion.justification}</p>
-            <div className="mt-4 rounded-2xl border border-slate-200 bg-white px-4 py-4">
-              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Evidencia textual</p>
-              <ul className="mt-2 space-y-2 text-sm text-slate-700">
-                {(criterion.textualEvidence || []).map((evidence) => (
-                  <li key={evidence}>• {evidence}</li>
+      <article className="mt-8 overflow-hidden rounded-3xl border border-slate-200 bg-white">
+        <div className="border-b border-slate-200 bg-slate-50 px-5 py-4">
+          <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-500">{rubric.name}</h3>
+          <p className="mt-1 text-sm text-slate-600">Cada criterio marca un único nivel. El resto de opciones queda vacío.</p>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="min-w-full border-collapse text-sm">
+            <thead>
+              <tr className="bg-slate-100 text-slate-700">
+                <th className="border border-slate-200 px-4 py-3 text-left font-semibold">Criterios</th>
+                {rubric.levels.map((level) => (
+                  <th key={level} className="border border-slate-200 px-3 py-3 text-center font-semibold">
+                    {level}
+                  </th>
                 ))}
-              </ul>
-            </div>
-            <p className="mt-4 text-sm text-slate-600">
-              <span className="font-semibold text-slate-800">Recomendación:</span> {criterion.recommendation}
-            </p>
-          </article>
-        ))}
-      </div>
+              </tr>
+            </thead>
+            <tbody>
+              {rubricRows.map((row) => (
+                <tr key={row.id} className="align-middle even:bg-slate-50/70">
+                  <th className="border border-slate-200 px-4 py-3 text-left font-semibold text-slate-900">{row.criterion}</th>
+                  {row.cells.map((cell) => (
+                    <td key={`${row.id}-${cell.level}`} className="border border-slate-200 px-3 py-3 text-center text-lg font-semibold text-slate-900">
+                      {cell.checked ? '✓' : ''}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </article>
 
-      <div className="mt-8 grid gap-4 lg:grid-cols-2">
+      <div className="mt-8 grid gap-4 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
         <article className="rounded-3xl border border-slate-200 bg-slate-50 p-5">
-          <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-500">Originalidad</h3>
+          <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-500">Observaciones</h3>
+          <ul className="mt-3 space-y-2 text-sm leading-7 text-slate-700">
+            {(observations.length ? observations : ['Se aprecia elaboración propia suficiente.']).map((observation) => (
+              <li key={observation} className="rounded-2xl border border-slate-200 bg-white px-4 py-3">• {observation}</li>
+            ))}
+          </ul>
+        </article>
+
+        <article className="rounded-3xl border border-slate-200 bg-slate-50 p-5">
+          <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-500">Originalidad y apoyo</h3>
           <p className="mt-3 text-lg font-semibold text-slate-900">{safeEvaluation.originality.category || 'Sin dato'}</p>
           <p className="mt-3 text-sm leading-7 text-slate-700">{safeEvaluation.originality.rationale || 'Sin observaciones.'}</p>
         </article>
-        <article className="rounded-3xl border border-slate-200 bg-slate-50 p-5">
-          <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-500">Dependencia de fuentes</h3>
-          <ul className="mt-3 space-y-3 text-sm text-slate-700">
-            {safeEvaluation.originality.findings.length ? safeEvaluation.originality.findings.map((finding) => (
-              <li key={`${finding.type}-${finding.evidence}`} className="rounded-2xl bg-white px-3 py-2">
-                <span className="font-semibold">{finding.type}:</span> {finding.evidence}
-              </li>
-            )) : <li className="rounded-2xl bg-white px-3 py-2">Sin indicios relevantes.</li>}
-          </ul>
-        </article>
       </div>
-
-      <article className="mt-6 rounded-3xl border border-slate-200 bg-slate-50 p-5">
-        <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-500">Observación final</h3>
-        <p className="mt-3 text-sm leading-7 text-slate-700">Informe orientativo para revisión docente.</p>
-      </article>
     </section>
   );
 }

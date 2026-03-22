@@ -1,6 +1,4 @@
 import rubric from '../../rubric/cernuda-2bach.json';
-import sampleOutput from '../../examples/sample-output.json';
-
 const LEVELS = rubric.levels;
 
 export async function evaluateEssayMock({ student = {}, rubricId = rubric.id, pdfFile = null, pdfFileName = '' } = {}) {
@@ -42,13 +40,15 @@ export async function evaluateEssayMock({ student = {}, rubricId = rubric.id, pd
         detectedLevel: criterion.detectedLevel,
         justification: criterion.justification,
         recommendation: criterion.recommendation,
+        needsManualReview: Boolean(criterion.needsManualReview),
       })),
       originality: {
         category: originality.category,
         rationale: originality.rationale,
         findings: originality.findings,
       },
-      finalNote: sampleOutput.report.finalNote,
+      outputMode: 'marked-rubric',
+      observations: buildObservations({ extraction, originality, criteria }),
     },
   };
 }
@@ -108,7 +108,7 @@ function buildOriginality({ normalizedStudent, pdfFileName, estimatedPages, extr
 
   if (lowerFile.includes('wiki') || lowerFile.includes('copia')) {
     return {
-      category: 'Revisión docente recomendada',
+      category: 'Sospecha alta de copia o reproducción',
       rationale: 'El nombre del archivo contiene pistas que podrían sugerir una fuerte dependencia de fuentes externas; conviene contrastar el trabajo completo en revisión manual.',
       findings: [
         {
@@ -128,7 +128,7 @@ function buildOriginality({ normalizedStudent, pdfFileName, estimatedPages, extr
   }
 
   return {
-    category: 'Revisión ligera aconsejable',
+    category: 'Sospecha moderada de dependencia de fuentes',
     rationale: 'La simulación aprecia algunos patrones demasiado formularios para un comentario breve; no implican copia, pero aconsejan una comprobación docente rápida.',
     findings: [
       {
@@ -151,6 +151,7 @@ function buildCriteria({ normalizedStudent, estimatedPages, pdfFileName, origina
           ? originality.findings.map((finding) => `${finding.type}: ${finding.evidence}`)
           : ['No se aprecian coincidencias textuales problemáticas en la simulación local.'],
         recommendation: 'Interpretar este bloque con prudencia y contrastarlo con la lectura docente del trabajo completo.',
+        needsManualReview: originality.category !== 'Sin indicios relevantes' && originality.findings.length > 0,
       };
     }
 
@@ -164,6 +165,7 @@ function buildCriteria({ normalizedStudent, estimatedPages, pdfFileName, origina
       justification: createJustification(criterion.name, detectedLevel, estimatedPages, extraction.documentStatus),
       textualEvidence: createEvidence(criterion.name, normalizedStudent, pdfFileName, estimatedPages),
       recommendation: createRecommendation(criterion.name, detectedLevel),
+      needsManualReview: detectedLevel === 'Muy deficiente',
     };
   });
 }
@@ -212,4 +214,20 @@ function createRecommendation(criterionName, detectedLevel) {
   }
 
   return `Revisar de forma prioritaria el apartado «${criterionName}» con apoyo de la rúbrica y del texto poético.`;
+}
+
+function buildObservations({ extraction, originality, criteria }) {
+  const observations = [];
+
+  const originalityObservation = {
+    'Sin indicios relevantes': 'Se aprecia elaboración propia suficiente.',
+    'Sospecha moderada de dependencia de fuentes': 'Se observa posible dependencia de materiales de apoyo.',
+    'Sospecha alta de copia o reproducción': 'Conviene revisión manual adicional.',
+  }[originality.category];
+
+  if (originalityObservation) observations.push(originalityObservation);
+  if (extraction.warnings.length) observations.push('Revisión manual necesaria.');
+  if (criteria.some((criterion) => criterion.needsManualReview)) observations.push('Revisión manual necesaria.');
+
+  return [...new Set(observations)];
 }
