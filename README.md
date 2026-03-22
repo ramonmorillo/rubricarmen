@@ -268,3 +268,16 @@ El PDF generado por el frontend incluye:
 - Backend Node.js desplegado en un entorno interno del centro, servidor propio o VPS.
 - OCR habilitado solo en el backend, nunca en el cliente.
 - Si el centro lo desea, puede mantenerse el antiguo Worker como pieza separada, pero el flujo principal de esta versión queda orientado al backend de `server/`.
+
+---
+
+## 13. Despliegue en GitHub Pages
+
+La publicación del frontend se realiza con **GitHub Actions** mediante el workflow `.github/workflows/deploy.yml`.
+
+Puntos clave de la configuración:
+
+- La app de Vite usa la base fija `/rubricarmen/` para que los assets resuelvan correctamente en `https://ramonmorillo.github.io/rubricarmen/`.
+- Cada **push a `main`** ejecuta la instalación de dependencias, el build con `npm run build` y la publicación automática de la carpeta `dist` en **GitHub Pages**.
+- GitHub Pages debe estar configurado en el repositorio para usar **GitHub Actions** como fuente de despliegue.
+
