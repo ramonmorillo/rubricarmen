@@ -19,11 +19,17 @@ export default [
     rules: {
       ...js.configs.recommended.rules,
       ...reactHooks.configs.recommended.rules,
-      'no-unused-vars': ['error', { argsIgnorePattern: '^[A-Z_]' }],
+      'no-unused-vars': ['error', { argsIgnorePattern: '^[A-Z_]', varsIgnorePattern: '^[A-Z_]' }],
     },
     plugins: {
       'react-hooks': reactHooks,
       'react-refresh': reactRefresh,
+    },
+  },
+  {
+    files: ['server/**/*.js', 'worker/**/*.js'],
+    languageOptions: {
+      globals: globals.node,
     },
   },
 ];

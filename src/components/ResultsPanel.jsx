@@ -2,13 +2,27 @@ import { Download, RefreshCcw, Save } from 'lucide-react';
 import { extractionStatusLabel, formatDate, ocrQualityLabel } from '../lib/formatters';
 
 export function ResultsPanel({ evaluation, onExportPdf, onExportJson, onReset }) {
+  const safeEvaluation = {
+    ...evaluation,
+    student: evaluation?.student || {},
+    extraction: {
+      warnings: [],
+      ...(evaluation?.extraction || {}),
+    },
+    criteria: Array.isArray(evaluation?.criteria) ? evaluation.criteria : [],
+    originality: {
+      findings: [],
+      ...(evaluation?.originality || {}),
+    },
+  };
+
   return (
     <section className="rounded-3xl border border-white/70 bg-white/90 p-6 shadow-panel backdrop-blur">
       <div className="flex flex-col gap-5 border-b border-slate-200 pb-5 lg:flex-row lg:items-end lg:justify-between">
         <div>
           <h2 className="text-xl font-semibold text-slate-900">Resultado de la evaluación</h2>
           <p className="mt-1 text-sm text-slate-500">
-            Informe orientativo generado el {formatDate(evaluation.generatedAt)}. No calcula la nota final; deja esa decisión para iDoceo y la revisión docente.
+            Informe orientativo generado el {formatDate(safeEvaluation.generatedAt)}. No calcula la nota final; deja esa decisión para iDoceo y la revisión docente.
           </p>
         </div>
         <div className="flex flex-col gap-3 sm:flex-row">
@@ -25,23 +39,23 @@ export function ResultsPanel({ evaluation, onExportPdf, onExportJson, onReset })
       </div>
 
       <div className="mt-6 grid gap-4 md:grid-cols-4">
-        <InfoCard label="Alumno/a" value={evaluation.student.name} />
-        <InfoCard label="Grupo" value={evaluation.student.group} />
-        <InfoCard label="Poema" value={evaluation.student.poemTitle || 'No indicado'} />
-        <InfoCard label="Estado del documento" value={extractionStatusLabel(evaluation.extraction)} emphasis />
+        <InfoCard label="Alumno/a" value={safeEvaluation.student.name || 'No indicado'} />
+        <InfoCard label="Grupo" value={safeEvaluation.student.group || 'No indicado'} />
+        <InfoCard label="Poema" value={safeEvaluation.student.poemTitle || 'No indicado'} />
+        <InfoCard label="Estado del documento" value={extractionStatusLabel(safeEvaluation.extraction)} emphasis />
       </div>
 
       <div className="mt-4 grid gap-4 md:grid-cols-3">
-        <InfoCard label="Texto embebido" value={evaluation.extraction.hasEmbeddedText ? 'Sí' : 'No'} />
-        <InfoCard label="OCR" value={evaluation.extraction.usedOcr ? 'Aplicado' : 'No necesario'} />
-        <InfoCard label="Calidad OCR" value={ocrQualityLabel(evaluation.extraction.ocrQuality)} />
+        <InfoCard label="Texto embebido" value={safeEvaluation.extraction.hasEmbeddedText ? 'Sí' : 'No'} />
+        <InfoCard label="OCR" value={safeEvaluation.extraction.usedOcr ? 'Aplicado' : 'No necesario'} />
+        <InfoCard label="Calidad OCR" value={ocrQualityLabel(safeEvaluation.extraction.ocrQuality)} />
       </div>
 
-      {evaluation.extraction.warnings.length ? (
+      {safeEvaluation.extraction.warnings.length ? (
         <div className="mt-5 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
           <p className="font-semibold">Avisos de extracción</p>
           <ul className="mt-2 list-disc space-y-1 pl-5">
-            {evaluation.extraction.warnings.map((warning) => (
+            {safeEvaluation.extraction.warnings.map((warning) => (
               <li key={warning}>{warning}</li>
             ))}
           </ul>
@@ -49,7 +63,7 @@ export function ResultsPanel({ evaluation, onExportPdf, onExportJson, onReset })
       ) : null}
 
       <div className="mt-8 space-y-4">
-        {evaluation.criteria.map((criterion) => (
+        {safeEvaluation.criteria.map((criterion) => (
           <article key={criterion.criterionId} className="rounded-3xl border border-slate-200 bg-slate-50 p-5">
             <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
               <div>
@@ -64,7 +78,7 @@ export function ResultsPanel({ evaluation, onExportPdf, onExportJson, onReset })
             <div className="mt-4 rounded-2xl border border-slate-200 bg-white px-4 py-4">
               <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Evidencia textual</p>
               <ul className="mt-2 space-y-2 text-sm text-slate-700">
-                {criterion.textualEvidence.map((evidence) => (
+                {(criterion.textualEvidence || []).map((evidence) => (
                   <li key={evidence}>• {evidence}</li>
                 ))}
               </ul>
@@ -79,13 +93,13 @@ export function ResultsPanel({ evaluation, onExportPdf, onExportJson, onReset })
       <div className="mt-8 grid gap-4 lg:grid-cols-2">
         <article className="rounded-3xl border border-slate-200 bg-slate-50 p-5">
           <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-500">Originalidad</h3>
-          <p className="mt-3 text-lg font-semibold text-slate-900">{evaluation.originality.category}</p>
-          <p className="mt-3 text-sm leading-7 text-slate-700">{evaluation.originality.rationale}</p>
+          <p className="mt-3 text-lg font-semibold text-slate-900">{safeEvaluation.originality.category || 'Sin dato'}</p>
+          <p className="mt-3 text-sm leading-7 text-slate-700">{safeEvaluation.originality.rationale || 'Sin observaciones.'}</p>
         </article>
         <article className="rounded-3xl border border-slate-200 bg-slate-50 p-5">
           <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-500">Dependencia de fuentes</h3>
           <ul className="mt-3 space-y-3 text-sm text-slate-700">
-            {evaluation.originality.findings.length ? evaluation.originality.findings.map((finding) => (
+            {safeEvaluation.originality.findings.length ? safeEvaluation.originality.findings.map((finding) => (
               <li key={`${finding.type}-${finding.evidence}`} className="rounded-2xl bg-white px-3 py-2">
                 <span className="font-semibold">{finding.type}:</span> {finding.evidence}
               </li>

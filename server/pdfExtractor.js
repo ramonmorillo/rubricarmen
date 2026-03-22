@@ -1,4 +1,3 @@
-import fs from 'node:fs/promises';
 import { cleanupTempDir, commandExists, compactWhitespace, createTempDir, runCommand, writeTempFile } from './utils.js';
 
 function naivePdfText(buffer) {

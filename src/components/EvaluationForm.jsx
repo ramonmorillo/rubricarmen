@@ -1,22 +1,22 @@
 const fieldClassName =
   'mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 shadow-sm outline-none transition focus:border-brand-500 focus:ring-4 focus:ring-brand-100';
 
-export function EvaluationForm({ rubric, formData, onChange, onFileChange, onSubmit, loading, error, onLoadExample }) {
+export function EvaluationForm({ rubric, formData, onChange, onFileChange, onSubmit, loading, error, onLoadDemo }) {
   return (
     <section className="rounded-3xl border border-white/70 bg-white/90 p-6 shadow-panel backdrop-blur">
       <div className="flex flex-col gap-3 border-b border-slate-200 pb-5 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h2 className="text-xl font-semibold text-slate-900">Entrada del trabajo</h2>
           <p className="mt-1 text-sm text-slate-500">
-            Sube el PDF del alumno y completa los datos básicos para obtener una valoración cualitativa guiada por la rúbrica.
+            La evaluación se genera íntegramente en el navegador. Puedes subir un PDF opcional o trabajar solo con los datos del formulario.
           </p>
         </div>
         <button
           type="button"
-          onClick={onLoadExample}
+          onClick={onLoadDemo}
           className="inline-flex items-center justify-center rounded-2xl border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 transition hover:border-brand-200 hover:bg-brand-50 hover:text-brand-700"
         >
-          Cargar ejemplo
+          Modo demo
         </button>
       </div>
 
@@ -31,7 +31,7 @@ export function EvaluationForm({ rubric, formData, onChange, onFileChange, onSub
         </div>
 
         <div className="grid gap-5 md:grid-cols-[2fr,1fr]">
-          <Field label="Título del poema" help="Opcional, útil para mejorar la localización del poema.">
+          <Field label="Título del poema" help="Opcional, útil para personalizar la simulación local.">
             <input className={fieldClassName} name="poemTitle" placeholder="Ej.: Donde habite el olvido" value={formData.poemTitle} onChange={onChange} />
           </Field>
           <Field label="Rúbrica" required>
@@ -41,10 +41,17 @@ export function EvaluationForm({ rubric, formData, onChange, onFileChange, onSub
           </Field>
         </div>
 
-        <Field label="PDF del trabajo" required help="La app intentará extraer texto digital; si no lo encuentra, activará OCR cuando esté disponible en el backend.">
-          <input className={`${fieldClassName} file:mr-4 file:rounded-xl file:border-0 file:bg-brand-50 file:px-4 file:py-2 file:font-medium file:text-brand-700`} type="file" accept="application/pdf" onChange={onFileChange} required />
-          {formData.pdfFileName ? <p className="mt-2 text-xs text-slate-500">Archivo seleccionado: {formData.pdfFileName}</p> : null}
+        <Field label="PDF del trabajo" help="Opcional. Si lo subes, la simulación usa su nombre y tamaño aproximado para enriquecer el resultado offline.">
+          <input className={`${fieldClassName} file:mr-4 file:rounded-xl file:border-0 file:bg-brand-50 file:px-4 file:py-2 file:font-medium file:text-brand-700`} type="file" accept="application/pdf" onChange={onFileChange} />
+          {formData.pdfFileName ? <p className="mt-2 text-xs text-slate-500">Archivo seleccionado: {formData.pdfFileName}</p> : <p className="mt-2 text-xs text-slate-500">Sin archivo: la app seguirá funcionando y generará una simulación local.</p>}
         </Field>
+
+        <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 text-sm text-slate-600">
+          <p className="font-medium text-slate-800">Modo GitHub Pages</p>
+          <p className="mt-2 leading-7">
+            Esta versión no hace llamadas a servidor ni a rutas <code>/api/*</code>. Todo el flujo funciona offline y nunca debería dejar la pantalla en blanco.
+          </p>
+        </div>
 
         <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 text-sm text-slate-600">
           <p className="font-medium text-slate-800">Criterios incluidos</p>
@@ -61,7 +68,7 @@ export function EvaluationForm({ rubric, formData, onChange, onFileChange, onSub
             disabled={loading}
             className="inline-flex items-center justify-center rounded-2xl bg-brand-600 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-brand-600/20 transition hover:bg-brand-700 disabled:cursor-not-allowed disabled:bg-slate-400"
           >
-            {loading ? 'Analizando PDF…' : 'Analizar trabajo'}
+            {loading ? 'Generando simulación…' : 'Analizar trabajo'}
           </button>
         </div>
       </form>

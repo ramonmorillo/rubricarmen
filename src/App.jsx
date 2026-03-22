@@ -5,7 +5,7 @@ import { AppShell } from './components/AppShell';
 import { EvaluationForm } from './components/EvaluationForm';
 import { ResultsPanel } from './components/ResultsPanel';
 import { messages } from './lib/i18n';
-import { evaluateEssay, fileToBase64 } from './lib/api';
+import { evaluateEssayMock } from './lib/mockApi';
 import { generateEvaluationPdf } from './lib/pdf';
 
 const initialFormData = {
@@ -37,21 +37,16 @@ export default function App() {
       pdfFile: file,
       pdfFileName: file?.name || '',
     }));
+    setError('');
   }
 
   async function handleSubmit(event) {
     event.preventDefault();
     setError('');
-
-    if (!formData.pdfFile) {
-      setError('Debes seleccionar un PDF antes de iniciar el análisis.');
-      return;
-    }
+    setLoading(true);
 
     try {
-      setLoading(true);
-      const pdfBase64 = await fileToBase64(formData.pdfFile);
-      const result = await evaluateEssay({
+      const result = await evaluateEssayMock({
         student: {
           name: formData.studentName.trim(),
           group: formData.studentGroup.trim(),
@@ -59,12 +54,15 @@ export default function App() {
           assignmentTitle: formData.pdfFileName || 'Trabajo del alumno',
         },
         rubricId: formData.rubricId,
-        pdfBase64,
+        pdfFile: formData.pdfFile,
         pdfFileName: formData.pdfFileName,
       });
+
       setEvaluation(result);
     } catch (submitError) {
-      setError(submitError.message || 'Ha ocurrido un error inesperado durante el análisis.');
+      console.error('Error al generar la evaluación local:', submitError);
+      setEvaluation(null);
+      setError(submitError?.message || 'No se ha podido completar la simulación local. Puedes usar el modo demo para seguir navegando por la app.');
     } finally {
       setLoading(false);
     }
@@ -72,26 +70,37 @@ export default function App() {
 
   function handleExportJson() {
     if (!evaluation) return;
-    const blob = new Blob([JSON.stringify(evaluation, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `evaluacion-${slugify(evaluation.student.name)}.json`;
-    link.click();
-    URL.revokeObjectURL(url);
+    try {
+      const blob = new Blob([JSON.stringify(evaluation, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `evaluacion-${slugify(evaluation.student.name)}.json`;
+      link.click();
+      URL.revokeObjectURL(url);
+    } catch (exportError) {
+      console.error('Error al exportar JSON:', exportError);
+      setError('No se ha podido exportar el JSON. La evaluación sigue visible en pantalla.');
+    }
   }
 
-  function handleLoadExample() {
-    setFormData({
-      studentName: 'Lucía Hernández Vega',
-      studentGroup: '2º Bach A',
-      poemTitle: 'Donde habite el olvido',
-      rubricId: rubric.id,
-      pdfFile: null,
-      pdfFileName: 'lucia-hernandez-cernuda.pdf',
-    });
-    setEvaluation(sampleOutput);
-    setError('');
+  function handleLoadDemo() {
+    try {
+      setFormData({
+        studentName: sampleOutput.student.name,
+        studentGroup: sampleOutput.student.group,
+        poemTitle: sampleOutput.student.poemTitle,
+        rubricId: rubric.id,
+        pdfFile: null,
+        pdfFileName: sampleOutput.student.assignmentTitle,
+      });
+      setEvaluation(sampleOutput);
+      setError('');
+    } catch (demoError) {
+      console.error('Error al activar el modo demo:', demoError);
+      setEvaluation(null);
+      setError('No se ha podido cargar el modo demo.');
+    }
   }
 
   function handleReset() {
@@ -111,26 +120,38 @@ export default function App() {
           onSubmit={handleSubmit}
           loading={loading}
           error={error}
-          onLoadExample={handleLoadExample}
+          onLoadDemo={handleLoadDemo}
         />
         {evaluation ? (
-          <ResultsPanel evaluation={evaluation} onExportPdf={() => generateEvaluationPdf(evaluation)} onExportJson={handleExportJson} onReset={handleReset} />
+          <ResultsPanel
+            evaluation={evaluation}
+            onExportPdf={() => generateEvaluationPdf(evaluation)}
+            onExportJson={handleExportJson}
+            onReset={handleReset}
+          />
         ) : (
-          <EmptyState />
+          <EmptyState onUseDemo={handleLoadDemo} />
         )}
       </main>
     </AppShell>
   );
 }
 
-function EmptyState() {
+function EmptyState({ onUseDemo }) {
   return (
     <section className="flex min-h-[400px] items-center justify-center rounded-3xl border border-dashed border-slate-300 bg-white/70 p-8 text-center shadow-panel backdrop-blur">
       <div className="max-w-md">
         <h2 className="text-xl font-semibold text-slate-900">Sin evaluación todavía</h2>
         <p className="mt-3 text-sm leading-7 text-slate-500">
-          Cuando analices un PDF aparecerán aquí el estado de extracción, los criterios cualitativos, la señalización prudente de originalidad y los botones para exportar el informe en PDF o JSON.
+          Puedes analizar el formulario sin subir ningún PDF o abrir el modo demo para ver el resultado completo sin depender de ningún backend.
         </p>
+        <button
+          type="button"
+          onClick={onUseDemo}
+          className="mt-5 inline-flex items-center justify-center rounded-2xl border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 transition hover:border-brand-200 hover:bg-brand-50 hover:text-brand-700"
+        >
+          Modo demo
+        </button>
       </div>
     </section>
   );
