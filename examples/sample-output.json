@@ -1,0 +1,89 @@
+{
+  "rubricId": "cernuda-2bach",
+  "rubricName": "Luis Cernuda · 2º Bachillerato",
+  "generatedAt": "2026-03-22T10:30:00.000Z",
+  "student": {
+    "name": "Lucía Hernández Vega",
+    "group": "2º Bach A",
+    "assignmentTitle": "Realidad, deseo y exilio en Luis Cernuda"
+  },
+  "criteria": [
+    {
+      "id": "author-context",
+      "name": "Comprensión del autor y del contexto",
+      "weight": 0.2,
+      "level": 4,
+      "score": 2,
+      "descriptorApplied": "Integra con precisión y madurez el contexto biográfico, histórico y literario de Cernuda, relacionándolo de forma relevante con la interpretación del trabajo.",
+      "justification": "Se sitúa con claridad a Cernuda en la Generación del 27 y se relaciona el exilio con la lectura del texto.",
+      "evidenceSummary": "\"Luis Cernuda pertenece a la Generación del 27\" · \"su exilio condiciona una parte esencial de su mirada\""
+    },
+    {
+      "id": "thematic-analysis",
+      "name": "Análisis temático",
+      "weight": 0.2,
+      "level": 4,
+      "score": 2,
+      "descriptorApplied": "Ofrece un análisis temático profundo, jerarquizado y bien fundamentado, conectando ideas, símbolos y matices de la obra.",
+      "justification": "Se desarrollan con coherencia los ejes de deseo, realidad, nostalgia y pérdida.",
+      "evidenceSummary": "\"conflicto entre deseo y realidad\" · \"convierte la nostalgia y la pérdida en temas centrales\""
+    },
+    {
+      "id": "literary-style",
+      "name": "Comentario literario y estilo",
+      "weight": 0.18,
+      "level": 3,
+      "score": 1.35,
+      "descriptorApplied": "Describe y comenta con corrección recursos literarios, tono, voz poética o estilo, relacionándolos con el sentido del texto.",
+      "justification": "El comentario sobre sobriedad expresiva, símbolos y tono resulta pertinente, aunque podría incorporar más terminología técnica.",
+      "evidenceSummary": "\"prefiere una dicción sobria que aumenta la intensidad emocional\""
+    },
+    {
+      "id": "structure-coherence",
+      "name": "Estructura y coherencia",
+      "weight": 0.14,
+      "level": 3,
+      "score": 1.05,
+      "descriptorApplied": "El trabajo está bien organizado, mantiene coherencia interna y desarrolla las ideas con orden.",
+      "justification": "La progresión desde el contexto hasta la interpretación personal es clara y el hilo argumental se entiende bien.",
+      "evidenceSummary": "Se distinguen tres párrafos con función expositiva y valorativa; los conectores \"además\" y \"por eso\" ayudan a la cohesión."
+    },
+    {
+      "id": "language-accuracy",
+      "name": "Corrección lingüística",
+      "weight": 0.13,
+      "level": 4,
+      "score": 1.3,
+      "descriptorApplied": "Destaca por su corrección, precisión léxica y adecuación estilística al género académico.",
+      "justification": "La redacción es clara, precisa y adecuada al registro académico del comentario literario.",
+      "evidenceSummary": "No se aprecian errores relevantes en la muestra aportada; conviene, no obstante, mantener la revisión final docente."
+    },
+    {
+      "id": "interpretive-originality",
+      "name": "Capacidad interpretativa y originalidad",
+      "weight": 0.15,
+      "level": 4,
+      "score": 1.5,
+      "descriptorApplied": "Aporta una lectura personal, matizada y convincente, apoyada en argumentos y evidencias del texto analizado.",
+      "justification": "La valoración personal está formulada con cautela y se apoya en ideas interpretativas sobre identidad, libertad y actualidad.",
+      "evidenceSummary": "\"A mi juicio\" · \"su lectura sigue siendo actual y permite conectar con inquietudes contemporáneas\""
+    }
+  ],
+  "summary": {
+    "strengths": [
+      "Contextualización sólida del autor y del exilio en relación con la obra.",
+      "Análisis temático bien enfocado en deseo, realidad y nostalgia.",
+      "Interpretación personal razonada y expresada con tono académico."
+    ],
+    "weaknesses": [
+      "El comentario estilístico podría ampliar el repertorio de recursos literarios analizados.",
+      "Sería útil incorporar referencias más concretas a poemas o versos para reforzar la evidencia textual."
+    ],
+    "recommendations": [
+      "Añadir una o dos citas breves o referencias explícitas a poemas de Cernuda para sostener mejor el análisis.",
+      "Precisar algunos conceptos técnicos del comentario literario, como tono, símbolo o voz poética."
+    ],
+    "finalObservation": "Lucía Hernández Vega presenta un trabajo sólido y bien orientado para 2º de Bachillerato. Destaca la relación entre contexto, temas e interpretación personal, aunque el comentario literario ganaría consistencia con referencias textuales más concretas. La valoración debe entenderse como una ayuda docente revisable, no como una corrección automática cerrada."
+  },
+  "finalScore": 9.2
+}

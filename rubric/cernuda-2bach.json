@@ -1,0 +1,76 @@
+{
+  "id": "cernuda-2bach",
+  "name": "Luis Cernuda · 2º Bachillerato",
+  "version": "1.0.0",
+  "language": "es",
+  "description": "Rúbrica docente para evaluar trabajos escritos de Literatura Española sobre Luis Cernuda en 2º de Bachillerato.",
+  "finalScoreScale": 10,
+  "criteria": [
+    {
+      "id": "author-context",
+      "name": "Comprensión del autor y del contexto",
+      "weight": 0.2,
+      "levels": {
+        "1": "Presenta datos imprecisos o muy escasos sobre Luis Cernuda y su contexto histórico-literario.",
+        "2": "Identifica aspectos básicos del autor y del contexto, aunque con desarrollo limitado o poca conexión con la obra.",
+        "3": "Explica con claridad la trayectoria de Cernuda y su relación con el contexto histórico, cultural y generacional.",
+        "4": "Integra con precisión y madurez el contexto biográfico, histórico y literario de Cernuda, relacionándolo de forma relevante con la interpretación del trabajo."
+      }
+    },
+    {
+      "id": "thematic-analysis",
+      "name": "Análisis temático",
+      "weight": 0.2,
+      "levels": {
+        "1": "Menciona temas de forma superficial, sin explicación suficiente ni apoyo textual.",
+        "2": "Reconoce algunos temas principales, pero con escasa profundización o ejemplos poco desarrollados.",
+        "3": "Analiza los temas centrales con coherencia y usa referencias textuales o argumentativas pertinentes.",
+        "4": "Ofrece un análisis temático profundo, jerarquizado y bien fundamentado, conectando ideas, símbolos y matices de la obra."
+      }
+    },
+    {
+      "id": "literary-style",
+      "name": "Comentario literario y estilo",
+      "weight": 0.18,
+      "levels": {
+        "1": "Apenas comenta recursos literarios o rasgos estilísticos, o los identifica de forma incorrecta.",
+        "2": "Señala algunos rasgos formales o estilísticos, aunque de manera parcial o descriptiva.",
+        "3": "Describe y comenta con corrección recursos literarios, tono, voz poética o estilo, relacionándolos con el sentido del texto.",
+        "4": "Interpreta con solvencia recursos formales y estilísticos, mostrando dominio del comentario literario y sensibilidad analítica."
+      }
+    },
+    {
+      "id": "structure-coherence",
+      "name": "Estructura y coherencia",
+      "weight": 0.14,
+      "levels": {
+        "1": "El texto presenta organización deficiente o ideas poco conectadas.",
+        "2": "La estructura es reconocible, aunque con transiciones débiles o desequilibrios entre apartados.",
+        "3": "El trabajo está bien organizado, mantiene coherencia interna y desarrolla las ideas con orden.",
+        "4": "La estructura es muy sólida, fluida y eficaz; cada apartado contribuye con claridad a la argumentación global."
+      }
+    },
+    {
+      "id": "language-accuracy",
+      "name": "Corrección lingüística",
+      "weight": 0.13,
+      "levels": {
+        "1": "Presenta errores frecuentes de ortografía, gramática o puntuación que dificultan la lectura.",
+        "2": "Contiene algunos errores relevantes, aunque el sentido general se comprende.",
+        "3": "Mantiene un uso correcto de la lengua, con pocos errores y registro académico adecuado.",
+        "4": "Destaca por su corrección, precisión léxica y adecuación estilística al género académico."
+      }
+    },
+    {
+      "id": "interpretive-originality",
+      "name": "Capacidad interpretativa y originalidad",
+      "weight": 0.15,
+      "levels": {
+        "1": "Se limita a repetir información general sin aportar interpretación propia.",
+        "2": "Incluye alguna valoración personal, pero poco desarrollada o escasamente argumentada.",
+        "3": "Formula interpretaciones razonadas y muestra cierta autonomía crítica.",
+        "4": "Aporta una lectura personal, matizada y convincente, apoyada en argumentos y evidencias del texto analizado."
+      }
+    }
+  ]
+}
