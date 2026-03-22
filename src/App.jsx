@@ -1,6 +1,5 @@
 import { useMemo, useState } from 'react';
 import rubric from '../rubric/cernuda-2bach.json';
-import sampleOutput from '../examples/sample-output.json';
 import { AppShell } from './components/AppShell';
 import { EvaluationForm } from './components/EvaluationForm';
 import { ResultsPanel } from './components/ResultsPanel';
@@ -84,17 +83,32 @@ export default function App() {
     }
   }
 
-  function handleLoadDemo() {
+  async function handleLoadDemo() {
+    const demoStudent = {
+      name: 'Claudia Vega Romero',
+      group: '2º Bachillerato A',
+      poemTitle: 'Donde habite el olvido',
+      assignmentTitle: 'comentario-cernuda-demo.pdf',
+    };
+
     try {
       setFormData({
-        studentName: sampleOutput.student.name,
-        studentGroup: sampleOutput.student.group,
-        poemTitle: sampleOutput.student.poemTitle,
+        studentName: demoStudent.name,
+        studentGroup: demoStudent.group,
+        poemTitle: demoStudent.poemTitle,
         rubricId: rubric.id,
         pdfFile: null,
-        pdfFileName: sampleOutput.student.assignmentTitle,
+        pdfFileName: demoStudent.assignmentTitle,
       });
-      setEvaluation(sampleOutput);
+
+      const result = await evaluateEssayMock({
+        student: demoStudent,
+        rubricId: rubric.id,
+        pdfFile: null,
+        pdfFileName: demoStudent.assignmentTitle,
+      });
+
+      setEvaluation(result);
       setError('');
     } catch (demoError) {
       console.error('Error al activar el modo demo:', demoError);

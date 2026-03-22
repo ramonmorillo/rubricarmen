@@ -137,6 +137,7 @@ export function rubricMatcher({ essayText, student, originality, extractionMeta 
     const score = profile?.scorer({ text: essayText, paragraphs, sentences, student, extractionMeta }) ?? 0.1;
     const evidence = extractEvidence(sentences, profile?.keywords || [], 2);
     const level = levelFromScore(score);
+    const needsManualReview = evidence.length === 0;
     return {
       criterion: criterion.name,
       criterionId: criterion.id,
@@ -144,6 +145,7 @@ export function rubricMatcher({ essayText, student, originality, extractionMeta 
       justification: buildJustification(level, criterion.name, evidence.length > 0),
       textualEvidence: evidence.length ? evidence : ['No hay evidencia suficiente en el texto extraído para valorar este criterio con mayor seguridad.'],
       recommendation: profile?.recommendation || 'Revisar este apartado con apoyo de la lectura docente directa.',
+      needsManualReview,
     };
   });
 
@@ -166,6 +168,7 @@ function originalityCriterion(criterion, originality) {
       ? originality.findings.map((item) => `${item.type}: ${item.evidence}`)
       : ['No se observan coincidencias textuales o estructurales excesivas con la base de conocimiento interna.'],
     recommendation: 'Interpretar este bloque con prudencia: la coincidencia conceptual esperable no debe confundirse con copia.',
+    needsManualReview: originality.category !== 'Sin indicios relevantes' && originality.findings.length > 0,
   };
 }
 
